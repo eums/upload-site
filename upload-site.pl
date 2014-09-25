@@ -47,7 +47,7 @@ sub constant_time_compare
   my $b = $_[1];
 
   if (length($a) != length($b)) {
-    return false;
+    return 0;
   }
 
   my $r = 0;
@@ -82,4 +82,4 @@ sub main
   }
 }
 
-main
+# main
