@@ -2,8 +2,6 @@
 use strict;
 use warnings;
 
-use CGI;
-
 my $archive_filename = "/tmp/upload-site-archive.tar.gz";
 my $output_directory = "/tmp/upload-site-output";
 
@@ -18,29 +16,32 @@ sub extract
     or die "extraction failed with code: $?";
 }
 
-sub write_from_stdin
+sub write_data
 {
-  my $archive_filename = $_[0];
+  my $filename = $_[0];
+  my $data     = $_[1];
 
-  open(my $fh, '>', $archive_filename)
-    or die "could not open $archive_filename";
+  open(my $fh, '>', $filename)
+    or die "could not open $filename";
 
-  print $fh <STDIN>;
+  print $fh $data;
 
   close($fh);
 }
 
 sub main
 {
-  my $cgi = new CGI;
-
-  if ($cgi->request_method() ne 'POST') {
-    print $cgi->header('text/html', '405 Method Not Allowed');
-    print 'Method not allowed';
+  print "Content-Type: text/plain\r\n";
+  if ($ENV{'REQUEST_METHOD'} ne 'POST') {
+    print "Status: 405 Method Not Allowed\r\n";
+    print "\r\n";
+    print "Method not allowed\r\n";
   } else {
-    write_from_stdin($archive_filename);
+    my $data = "";
+    read STDIN, $data, $ENV{'CONTENT_LENGTH'};
+    write_data($archive_filename, $data);
     extract($archive_filename, $output_directory);
-    print $cgi->header('text/html');
+    print "\r\ndone\r\n";
   }
 }
 
