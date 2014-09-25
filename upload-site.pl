@@ -53,7 +53,7 @@ sub constant_time_compare
   my $r = 0;
   my $i = 0;
   while ($i < length($b)) {
-    $r |= (substr $a, $i, 1) ^ (substr $b, $i, 1);
+    $r |= ord(substr $a, $i, 1) ^ ord(substr $b, $i, 1);
     $i++;
   }
 
