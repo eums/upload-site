@@ -25,9 +25,7 @@ sub write_from_stdin
   open(my $fh, '>', $archive_filename)
     or die "could not open $archive_filename";
 
-  while (<>) {
-    print $fh $_;
-  }
+  print $fh <STDIN>;
 
   close($fh);
 }
