@@ -1,9 +1,11 @@
 #!/usr/bin/env perl
 use strict;
 use warnings;
+use Digest::SHA qw(hmac_sha1_hex);
 
 my $archive_filename = "/tmp/upload-site-archive.tar.gz";
 my $output_directory = "/tmp/upload-site-output";
+my $secret = "todo";
 
 sub extract
 {
@@ -29,6 +31,35 @@ sub write_data
   close($fh);
 }
 
+sub verify_hmac
+{
+  my $data          = $_[0];
+  my $received_hmac = $_[1];
+  my $secret        = $_[2];
+
+  my $hmac = hmac_sha1_hex($data, $secret);
+  return constant_time_compare($hmac, $received_hmac);
+}
+
+sub constant_time_compare
+{
+  my $a = $_[0];
+  my $b = $_[1];
+
+  if (length($a) != length($b)) {
+    return false;
+  }
+
+  my $r = 0;
+  my $i = 0;
+  while ($i < length($b)) {
+    $r |= (substr $a, $i, 1) ^ (substr $b, $i, 1);
+    $i++;
+  }
+
+  return ($r == 0);
+}
+
 sub main
 {
   print "Content-Type: text/plain\r\n";
@@ -39,9 +70,15 @@ sub main
   } else {
     my $data = "";
     read STDIN, $data, $ENV{'CONTENT_LENGTH'};
-    write_data($archive_filename, $data);
-    extract($archive_filename, $output_directory);
-    print "\r\ndone\r\n";
+
+    if (verify_hmac($data, $ENV{'HTTP_X_SIGNATURE'}, $secret)) {
+      write_data($archive_filename, $data);
+      extract($archive_filename, $output_directory);
+      print "\r\ndone\r\n";
+    } else {
+      print "Status: 400 Bad Request\r\n";
+      print "\r\nsignature mismatch\r\n";
+    }
   }
 }
 
