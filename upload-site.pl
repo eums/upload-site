@@ -2,9 +2,7 @@
 use strict;
 use warnings;
 
-use autodie;
-use IO::File;
-use CGI qw/:standard/;
+use CGI;
 
 my $archive_filename = "/tmp/upload-site-archive.tar.gz";
 my $output_directory = "/tmp/upload-site-output";
@@ -20,26 +18,32 @@ sub extract
     or die "extraction failed with code: $?";
 }
 
-sub write_file
+sub write_from_stdin
 {
   my $archive_filename = $_[0];
-  my $data             = $_[1];
 
-  my $fh = IO::File->new($archive_filename, 'w');
-  print $fh $data;
-  undef $fh;
+  open(my $fh, '>', $archive_filename)
+    or die "could not open $archive_filename";
+
+  while (<>) {
+    print $fh $_;
+  }
+
+  close($fh);
 }
 
 sub main
 {
   my $cgi = new CGI;
 
-  if ($cgi->request_method() != 'POST') {
+  if ($cgi->request_method() ne 'POST') {
     print $cgi->header('text/html', '405 Method Not Allowed');
+    print 'Method not allowed';
+  } else {
+    write_from_stdin($archive_filename);
+    extract($archive_filename, $output_directory);
+    print $cgi->header('text/html');
   }
-
-  write_file($archive_filename, $cgi->param('POSTDATA'));
-  extract($archive_filename, $output_directory);
 }
 
 main
