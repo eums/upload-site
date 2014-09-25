@@ -1,21 +1,13 @@
 #!/usr/bin/env perl
 
-use IO::Zlib;
-use Archive::Tar;
-use CGI;
-use Cwd;
-
 sub extract
 {
-  my ($archive_filename, $destination) = @_;
+  my $archive_filename = $_[0];
+  my $destination_dir  = $_[1];
 
-  my $zlib = IO::Zlib->new($archive_filename, 'r');
-  my $tar = Archive::Tar->new;
-
-  my $cwd = getcwd;
-  chdir($destination);
-  $tar->read($zlib, {extract => 'true'});
-  chdir($cwd);
+  @args = ("/bin/tar", "-xzf", $archive_filename, "-C", $destination_dir, ".");
+  system(@args) == 0
+    or die "extraction failed with code: $?";
 }
 
-extract("archive.tar.gz", "./dest");
+extract("./archive.tar.gz", "./dest");
