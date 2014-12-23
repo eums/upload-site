@@ -3,9 +3,13 @@ use strict;
 use warnings;
 use Digest::SHA qw(hmac_sha1_hex);
 
-my $archive_filename = "/tmp/upload-site-archive.tar.gz";
-my $output_directory = "/tmp/upload-site-output";
-my $secret = "todo";
+# Place another file in the same directory as this one called
+# upload-site-config.pl, and make sure it assigns the following variables:
+#
+#   $archive_filename => The filename for the temporary archive.
+#   $output_directory => where to put the extracted files
+#   $secret => HMAC_SHA1 key for verifying POST data.
+require 'upload-site-config.pl';
 
 sub extract
 {
@@ -13,7 +17,7 @@ sub extract
   my $destination_dir  = $_[1];
 
   my @args =
-    ("/bin/tar", "-xzf", $archive_filename, "-C", $destination_dir, ".");
+    ("/bin/tar", "-xzf", $archive_filename, "-C", $destination_dir);
   system(@args) == 0
     or die "extraction failed with code: $?";
 }
