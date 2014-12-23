@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-use strict;
 use warnings;
 use Digest::SHA qw(hmac_sha1_hex);
 
@@ -17,7 +16,7 @@ sub extract
   my $destination_dir  = $_[1];
 
   my @args =
-    ("/bin/tar", "-xzf", $archive_filename, "-C", $destination_dir);
+    ("/bin/tar", "-xzf", $archive_filename, "-C", $destination_dir, "--preserve-permissions");
   system(@args) == 0
     or die "extraction failed with code: $?";
 }
@@ -86,4 +85,4 @@ sub main
   }
 }
 
-main
+main()
