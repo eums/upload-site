@@ -82,4 +82,4 @@ sub main
   }
 }
 
-# main
+main
