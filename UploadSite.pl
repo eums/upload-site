@@ -76,6 +76,10 @@ sub main
     if (verify_hmac($data, $ENV{'HTTP_X_SIGNATURE'}, $secret)) {
       write_data($archive_filename, $data);
       extract($archive_filename, $output_directory);
+
+      # this is necessary on namecheap, for some reason
+      system("chmod", "0755", $output_directory);
+
       print "\r\ndone\r\n";
     } else {
       print "Status: 400 Bad Request\r\n";
