@@ -1,14 +1,9 @@
 #!/usr/bin/env perl
+use strict;
 use warnings;
 use Digest::SHA qw(hmac_sha1_hex);
 
-# Place another file in the same directory as this one called
-# upload-site-config.pl, and make sure it assigns the following variables:
-#
-#   $archive_filename => The filename for the temporary archive.
-#   $output_directory => where to put the extracted files
-#   $secret => HMAC_SHA1 key for verifying POST data.
-require 'upload-site-config.pl';
+use UploadSiteConfig;
 
 sub extract
 {
@@ -73,6 +68,10 @@ sub main
   } else {
     my $data = "";
     read STDIN, $data, $ENV{'CONTENT_LENGTH'};
+
+    my $secret           = $UploadSiteConfig::secret;
+    my $archive_filename = $UploadSiteConfig::archive_filename;
+    my $output_directory = $UploadSiteConfig::output_directory;
 
     if (verify_hmac($data, $ENV{'HTTP_X_SIGNATURE'}, $secret)) {
       write_data($archive_filename, $data);
