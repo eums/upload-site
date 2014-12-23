@@ -5,13 +5,8 @@ Deploys a static site by receiving a tar.gz archive of all its content via HTTP 
 
 ## Configuration
 
-Create a file `upload-site-config.pl` in the same directory as this script with
-the following variables:
-
-* **archive_filename** The filename of a temporary file used to write the
-  archive data to before extracting. Example: `/tmp/upload-site.archive.tar.gz`
-* **output_directory** The directory to extract the archive into.
-* **secret** A secret key used for verifying the data.
+Edit `UploadSiteConfig.example.pm`, and save it as `UploadSiteConfig.pm` in the
+same directory as `UploadSite.pl`.
 
 ## Usage
 
