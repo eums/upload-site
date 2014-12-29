@@ -61,6 +61,27 @@ sub constant_time_compare
   return ($r == 0);
 }
 
+sub move_files
+{
+    my ($from_dir, $to_dir) = @_;
+
+    # Delete all the files/directories in the destination
+    opendir(TO, $to_dir)
+      or die "opendir $to_dir failed: $!";
+    while (my $file = readdir(TO)) {
+      remove_tree($file)
+        or die "remove_tree $file failed: $1";
+    }
+
+    # Copy each file/directory individually
+    opendir(FROM, $from_dir)
+      or die "opendir $from_dir failed: $!";
+    while (my $file = readdir(FROM)) {
+      move($file, $to_dir)
+        or die "move $file, $to_dir failed: $!";
+    }
+}
+
 sub main
 {
   print "Content-Type: text/plain\r\n";
@@ -87,10 +108,7 @@ sub main
       make_path($extract_directory);
       extract($archive_filename, $extract_directory);
 
-      remove_tree($output_directory)
-        or die "Cannot remove output directory";
-      move($extract_directory, $output_directory)
-        or die "Move failed: $!";
+      move_files($extract_directory, $output_directory);
 
       # this is necessary on namecheap, for some reason
       chmod(0755, $output_directory);
