@@ -2,6 +2,9 @@
 use strict;
 use warnings;
 use Digest::SHA qw(hmac_sha1_hex);
+use File::Path qw(make_path remove_tree);
+use File::Basename qw(dirname);
+use File::Copy qw(move);
 
 use UploadSiteConfig;
 
@@ -69,16 +72,25 @@ sub main
     my $data = "";
     read STDIN, $data, $ENV{'CONTENT_LENGTH'};
 
-    my $secret           = $UploadSiteConfig::secret;
-    my $archive_filename = $UploadSiteConfig::archive_filename;
-    my $output_directory = $UploadSiteConfig::output_directory;
+    my $secret            = $UploadSiteConfig::secret;
+    my $archive_filename  = $UploadSiteConfig::archive_filename;
+    my $output_directory  = $UploadSiteConfig::output_directory;
+    my $extract_directory = $UploadSiteConfig::extract_directory;
 
     if (verify_hmac($data, $ENV{'HTTP_X_SIGNATURE'}, $secret)) {
+      make_path(dirname($archive_filename));
       write_data($archive_filename, $data);
-      extract($archive_filename, $output_directory);
+
+      if (-e $extract_directory) {
+        remove_tree($extract_directory);
+      }
+      make_path($extract_directory);
+      extract($archive_filename, $extract_directory);
+
+      move($extract_directory, $output_directory);
 
       # this is necessary on namecheap, for some reason
-      system("chmod", "0755", $output_directory);
+      chmod(0755, $output_directory);
 
       print "\r\ndone\r\n";
     } else {
