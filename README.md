@@ -8,6 +8,14 @@ Deploys a static site by receiving a tar.gz archive of all its content via HTTP 
 Edit `UploadSiteConfig.example.pm`, and save it as `UploadSiteConfig.pm` in the
 same directory as `UploadSite.pl`.
 
+Make sure you deny access to the configuration files with something like this
+(for Apache):
+
+    <Files UploadSiteConfig.pm>
+      Order allow,deny
+      Deny from all
+    </Files>
+
 ## Usage
 
 Send a POST request pointing to this script with:
