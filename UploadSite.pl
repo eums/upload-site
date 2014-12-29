@@ -69,6 +69,7 @@ sub move_files
     opendir(TO, $to_dir)
       or die "opendir $to_dir failed: $!";
     while (my $file = readdir(TO)) {
+      next if $file eq "." || $file eq "..";
       remove_tree($file)
         or die "remove_tree $file failed: $1";
     }
@@ -77,6 +78,7 @@ sub move_files
     opendir(FROM, $from_dir)
       or die "opendir $from_dir failed: $!";
     while (my $file = readdir(FROM)) {
+      next if $file == "." || $file == "..";
       move($file, $to_dir)
         or die "move $file, $to_dir failed: $!";
     }
