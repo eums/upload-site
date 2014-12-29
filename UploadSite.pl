@@ -87,7 +87,10 @@ sub main
       make_path($extract_directory);
       extract($archive_filename, $extract_directory);
 
-      move($extract_directory, $output_directory);
+      remove_tree($output_directory)
+        or die "Cannot remove output directory";
+      move($extract_directory, $output_directory)
+        or die "Move failed: $!";
 
       # this is necessary on namecheap, for some reason
       chmod(0755, $output_directory);
