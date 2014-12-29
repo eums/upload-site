@@ -4,7 +4,6 @@ use warnings;
 use Digest::SHA qw(hmac_sha1_hex);
 use File::Path qw(make_path remove_tree);
 use File::Basename qw(dirname);
-use File::Copy qw(move);
 
 use UploadSiteConfig;
 
@@ -61,27 +60,10 @@ sub constant_time_compare
   return ($r == 0);
 }
 
-sub move_files
+sub system_or_die
 {
-    my ($from_dir, $to_dir) = @_;
-
-    # Delete all the files/directories in the destination
-    opendir(TO, $to_dir)
-      or die "opendir $to_dir failed: $!";
-    while (my $file = readdir(TO)) {
-      next if $file eq "." || $file eq "..";
-      remove_tree($file)
-        or die "remove_tree $file failed: $1";
-    }
-
-    # Copy each file/directory individually
-    opendir(FROM, $from_dir)
-      or die "opendir $from_dir failed: $!";
-    while (my $file = readdir(FROM)) {
-      next if $file == "." || $file == "..";
-      move($file, $to_dir)
-        or die "move $file, $to_dir failed: $!";
-    }
+    system(@_) == 0
+      or die "system(@_) failed: $!";
 }
 
 sub main
@@ -110,10 +92,8 @@ sub main
       make_path($extract_directory);
       extract($archive_filename, $extract_directory);
 
-      move_files($extract_directory, $output_directory);
-
-      # this is necessary on namecheap, for some reason
-      chmod(0755, $output_directory);
+      system("rm -r $output_directory/*");
+      system_or_die("cp -r $extract_directory/* $output_directory");
 
       print "\r\ndone\r\n";
     } else {
